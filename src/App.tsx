@@ -32,7 +32,9 @@ const router = createBrowserRouter([
       },
     ],
   },
-]);
+], {
+  basename: '/brain-wrangler-app',
+});
 
 function App() {
   return <RouterProvider router={router} />;
