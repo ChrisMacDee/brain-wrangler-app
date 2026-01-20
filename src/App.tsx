@@ -9,6 +9,7 @@ const router = createBrowserRouter([
   {
     path: '/',
     element: <Layout />,
+    errorElement: <Layout />,
     children: [
       {
         index: true,
@@ -29,6 +30,10 @@ const router = createBrowserRouter([
       {
         path: 'settings',
         element: <SettingsPage />,
+      },
+      {
+        path: '*',
+        element: <Navigate to="/timer" replace />,
       },
     ],
   },

@@ -14,7 +14,10 @@
         var redirect = sessionStorage.redirect;
         delete sessionStorage.redirect;
         if (redirect && redirect !== location.href) {
-          history.replaceState(null, null, redirect);
+          // Extract path and search from the redirect URL
+          var url = new URL(redirect);
+          var path = url.pathname + url.search + url.hash;
+          history.replaceState(null, null, path);
         }
       })();
     </script>
