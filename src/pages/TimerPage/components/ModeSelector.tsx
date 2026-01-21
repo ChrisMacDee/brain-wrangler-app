@@ -46,6 +46,10 @@ export function ModeSelector() {
 
   const handleModeChange = (mode: TimerMode) => {
     if (mode !== currentMode) {
+      // Haptic feedback on mobile
+      if ('vibrate' in navigator) {
+        navigator.vibrate(5);
+      }
       setMode(mode);
     }
   };
@@ -63,10 +67,11 @@ export function ModeSelector() {
               className={`
                 flex-1 flex flex-col items-center justify-center gap-1
                 min-h-[72px] px-3 py-3 rounded-xl
-                font-medium transition-all duration-200
+                font-medium transition-all duration-300 ease-out
+                active:scale-95 transform
                 ${isActive
-                  ? `${modeConfig.activeBg} ${modeConfig.activeColor} border`
-                  : 'text-gray-400 hover:text-gray-300 hover:bg-gray-700/30 border border-transparent'
+                  ? `${modeConfig.activeBg} ${modeConfig.activeColor} border shadow-lg scale-105`
+                  : 'text-gray-400 hover:text-gray-300 hover:bg-gray-700/30 border border-transparent hover:scale-102'
                 }
               `}
               aria-label={`Switch to ${modeConfig.label} mode`}

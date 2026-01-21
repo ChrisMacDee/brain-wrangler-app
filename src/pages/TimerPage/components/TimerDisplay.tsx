@@ -59,7 +59,10 @@ export function TimerDisplay({ size = 280 }: TimerDisplayProps) {
   return (
     <div className="flex flex-col items-center justify-center">
       {/* Timer Circle Container */}
-      <div className="relative" style={{ width: size, height: size }}>
+      <div
+        className={`relative transition-transform duration-500 ${isRunning ? 'animate-[pulse-ring_2s_ease-in-out_infinite]' : ''}`}
+        style={{ width: size, height: size }}
+      >
         {/* SVG Timer Ring */}
         <svg
           className={`transform -rotate-90 transition-all duration-300 ${isRunning ? colors.glow : ''}`}
@@ -87,27 +90,30 @@ export function TimerDisplay({ size = 280 }: TimerDisplayProps) {
             strokeDasharray={circumference}
             strokeDashoffset={strokeDashoffset}
             className={`${colors.primary} transition-all duration-1000 ease-linear`}
+            style={{
+              filter: isRunning ? 'drop-shadow(0 0 8px currentColor)' : 'none',
+            }}
           />
         </svg>
 
         {/* Center content */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           {/* Mode label */}
-          <span className={`text-sm font-medium ${colors.textColor} mb-2 tracking-wide uppercase`}>
+          <span className={`text-sm font-medium ${colors.textColor} mb-2 tracking-wide uppercase transition-all duration-300`}>
             {colors.label}
           </span>
 
           {/* Time display */}
-          <span className="text-6xl md:text-7xl font-mono font-bold text-gray-100 dark:text-white tabular-nums tracking-tight">
+          <span className="text-6xl md:text-7xl font-mono font-bold text-gray-100 dark:text-white tabular-nums tracking-tight transition-all duration-300">
             {formattedTime}
           </span>
 
           {/* Status indicator */}
           <div className="mt-3 flex items-center gap-2">
             {isRunning && (
-              <span className={`inline-block w-2 h-2 rounded-full ${colors.textColor.replace('text-', 'bg-')} animate-pulse`} />
+              <span className={`inline-block w-2 h-2 rounded-full ${colors.textColor.replace('text-', 'bg-')} animate-pulse shadow-lg`} />
             )}
-            <span className="text-sm text-gray-400">
+            <span className="text-sm text-gray-400 transition-opacity duration-300">
               {status === TimerStatus.RUNNING && 'Running'}
               {status === TimerStatus.PAUSED && 'Paused'}
               {status === TimerStatus.IDLE && 'Ready'}

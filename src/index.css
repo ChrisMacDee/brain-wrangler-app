@@ -15,14 +15,88 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-body {
+/* Disable page scrolling - app should be fixed */
+html, body {
   margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  position: fixed;
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+body {
   min-width: 320px;
-  min-height: 100vh;
 }
 
 #root {
-  min-height: 100vh;
+  width: 100%;
+  height: 100%;
+}
+
+/* Smooth number transitions */
+@property --num {
+  syntax: '<integer>';
+  initial-value: 0;
+  inherits: false;
+}
+
+/* Pulse animation for running timer */
+@keyframes pulse-ring {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.02);
+    opacity: 0.9;
+  }
+}
+
+/* Scale bounce for buttons */
+@keyframes scale-bounce {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.95);
+  }
+}
+
+/* Slide up animation */
+@keyframes slide-up {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Celebration shake */
+@keyframes celebration-shake {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(5deg); }
+  75% { transform: rotate(-5deg); }
+}
+
+/* Add smooth animations to all interactive elements */
+button, a {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+button:active {
+  animation: scale-bounce 0.2s ease-out;
+}
+
+/* Smooth scrolling for inner containers */
+.scrollable-content {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
 }
 
 @media (prefers-color-scheme: light) {
