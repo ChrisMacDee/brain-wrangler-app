@@ -32,6 +32,8 @@ interface AppStore {
   remainingSeconds: number;
   currentTaskId: string | null;
   pomodorosInSession: number;
+  startTime: number | null;
+  totalDuration: number;
 
   // Timer Actions
   startTimer: () => void;
@@ -41,6 +43,7 @@ interface AppStore {
   setMode: (mode: TimerMode) => void;
   assignTask: (taskId: string | null) => void;
   completePomodoro: () => void;
+  syncTimer: () => void;
 
   // Tasks State
   tasks: Task[];
@@ -102,31 +105,45 @@ export const useStore = create<AppStore>()(
       remainingSeconds: DEFAULT_WORK_DURATION,
       currentTaskId: null,
       pomodorosInSession: 0,
+      startTime: null,
+      totalDuration: DEFAULT_WORK_DURATION,
 
       startTimer: () =>
         set((state) => {
           state.status = TimerStatusValue.RUNNING;
+          state.startTime = Date.now();
+          state.totalDuration = state.remainingSeconds;
         }),
 
       pauseTimer: () =>
         set((state) => {
+          // Sync timer before pausing to get accurate remaining time
+          if (state.startTime && state.status === TimerStatusValue.RUNNING) {
+            const elapsed = Math.floor((Date.now() - state.startTime) / 1000);
+            state.remainingSeconds = Math.max(0, state.totalDuration - elapsed);
+          }
           state.status = TimerStatusValue.PAUSED;
+          state.startTime = null;
         }),
 
       resetTimer: () =>
         set((state) => {
           state.status = TimerStatusValue.IDLE;
+          state.startTime = null;
+          let duration: number;
           switch (state.mode) {
             case TimerModeValue.WORK:
-              state.remainingSeconds = state.settings.timer.workDuration * 60;
+              duration = state.settings.timer.workDuration * 60;
               break;
             case TimerModeValue.SHORT_BREAK:
-              state.remainingSeconds = state.settings.timer.shortBreakDuration * 60;
+              duration = state.settings.timer.shortBreakDuration * 60;
               break;
             case TimerModeValue.LONG_BREAK:
-              state.remainingSeconds = state.settings.timer.longBreakDuration * 60;
+              duration = state.settings.timer.longBreakDuration * 60;
               break;
           }
+          state.remainingSeconds = duration;
+          state.totalDuration = duration;
         }),
 
       tick: () =>
@@ -136,14 +153,30 @@ export const useStore = create<AppStore>()(
             return;
           }
 
-          if (state.remainingSeconds > 1) {
-            state.remainingSeconds -= 1;
-          } else {
-            // Timer has reached zero
-            state.remainingSeconds = 0;
-            state.status = TimerStatusValue.IDLE;
-            // Note: The actual completion logic (recording session, notifications)
-            // is handled by useTimer hook which will call completePomodoro()
+          // Calculate remaining time based on elapsed time since start
+          if (state.startTime) {
+            const elapsed = Math.floor((Date.now() - state.startTime) / 1000);
+            const newRemaining = Math.max(0, state.totalDuration - elapsed);
+
+            if (newRemaining > 0) {
+              state.remainingSeconds = newRemaining;
+            } else {
+              // Timer has reached zero
+              state.remainingSeconds = 0;
+              state.status = TimerStatusValue.IDLE;
+              state.startTime = null;
+              // Note: The actual completion logic (recording session, notifications)
+              // is handled by useTimer hook which will call completePomodoro()
+            }
+          }
+        }),
+
+      syncTimer: () =>
+        set((state) => {
+          // Sync timer when app comes back to foreground
+          if (state.status === TimerStatusValue.RUNNING && state.startTime) {
+            const elapsed = Math.floor((Date.now() - state.startTime) / 1000);
+            state.remainingSeconds = Math.max(0, state.totalDuration - elapsed);
           }
         }),
 
@@ -151,17 +184,21 @@ export const useStore = create<AppStore>()(
         set((state) => {
           state.mode = mode;
           state.status = TimerStatusValue.IDLE;
+          state.startTime = null;
+          let duration: number;
           switch (mode) {
             case TimerModeValue.WORK:
-              state.remainingSeconds = state.settings.timer.workDuration * 60;
+              duration = state.settings.timer.workDuration * 60;
               break;
             case TimerModeValue.SHORT_BREAK:
-              state.remainingSeconds = state.settings.timer.shortBreakDuration * 60;
+              duration = state.settings.timer.shortBreakDuration * 60;
               break;
             case TimerModeValue.LONG_BREAK:
-              state.remainingSeconds = state.settings.timer.longBreakDuration * 60;
+              duration = state.settings.timer.longBreakDuration * 60;
               break;
           }
+          state.remainingSeconds = duration;
+          state.totalDuration = duration;
         }),
 
       assignTask: (taskId) =>
@@ -210,24 +247,31 @@ export const useStore = create<AppStore>()(
               state.pomodorosInSession > 0 &&
               state.pomodorosInSession % state.settings.timer.longBreakInterval === 0;
 
+            let duration: number;
             if (shouldTakeLongBreak) {
               state.mode = TimerModeValue.LONG_BREAK;
-              state.remainingSeconds = state.settings.timer.longBreakDuration * 60;
+              duration = state.settings.timer.longBreakDuration * 60;
             } else {
               state.mode = TimerModeValue.SHORT_BREAK;
-              state.remainingSeconds = state.settings.timer.shortBreakDuration * 60;
+              duration = state.settings.timer.shortBreakDuration * 60;
             }
+            state.remainingSeconds = duration;
+            state.totalDuration = duration;
 
             // Auto-start break if setting enabled
             if (state.settings.timer.autoStartBreaks) {
               state.status = TimerStatusValue.RUNNING;
+              state.startTime = Date.now();
             } else {
               state.status = TimerStatusValue.IDLE;
+              state.startTime = null;
             }
           } else {
             // Coming from a break - switch back to work
             state.mode = TimerModeValue.WORK;
-            state.remainingSeconds = state.settings.timer.workDuration * 60;
+            const duration = state.settings.timer.workDuration * 60;
+            state.remainingSeconds = duration;
+            state.totalDuration = duration;
 
             // Reset pomodoros after long break
             if (currentState.mode === TimerModeValue.LONG_BREAK) {
@@ -237,8 +281,10 @@ export const useStore = create<AppStore>()(
             // Auto-start work if setting enabled
             if (state.settings.timer.autoStartWork) {
               state.status = TimerStatusValue.RUNNING;
+              state.startTime = Date.now();
             } else {
               state.status = TimerStatusValue.IDLE;
+              state.startTime = null;
             }
           }
         });

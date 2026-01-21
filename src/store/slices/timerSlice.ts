@@ -29,7 +29,7 @@ export const createTimerSlice: StateCreator<
   [['zustand/immer', never]],
   [],
   TimerSlice
-> = (set, get) => ({
+> = (set) => ({
   // Initial State
   status: TimerStatus.IDLE,
   mode: TimerMode.WORK,
