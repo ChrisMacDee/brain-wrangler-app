@@ -8,6 +8,7 @@ import { Target } from 'lucide-react';
 export function TimerPage() {
   const status = useStore(selectTimerStatus);
   const tick = useStore((state) => state.tick);
+  const syncTimer = useStore((state) => state.syncTimer);
   const pomodorosInSession = useStore(selectPomodorosInSession);
   const settings = useStore((state) => state.settings.timer);
 
@@ -21,6 +22,18 @@ export function TimerPage() {
   const [showTaskSelector, setShowTaskSelector] = useState(false);
 
   const currentTask = currentTaskId ? tasks.find((t) => t.id === currentTaskId) || null : null;
+
+  // Sync timer when page becomes visible (handles background/foreground transitions)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && status === TimerStatus.RUNNING) {
+        syncTimer();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [status, syncTimer]);
 
   // Timer tick effect - runs every second when timer is active
   useEffect(() => {
@@ -66,18 +79,18 @@ export function TimerPage() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-between min-h-full px-4 py-6 md:py-8">
+    <div className="flex flex-col items-center justify-between h-full px-3 py-3 md:px-4 md:py-8">
       {/* Top Section - Mode Selector */}
-      <div className="w-full flex justify-center pt-2 md:pt-4">
+      <div className="w-full flex justify-center">
         <ModeSelector />
       </div>
 
       {/* Center Section - Timer Display (Hero) */}
-      <div className="flex-1 flex flex-col items-center justify-center -mt-4 md:-mt-8">
-        <TimerDisplay size={280} />
+      <div className="flex-1 flex flex-col items-center justify-center -mt-2 md:-mt-8">
+        <TimerDisplay size={260} />
 
         {/* Session Progress Indicator */}
-        <div className="mt-6 flex items-center gap-2 text-gray-400">
+        <div className="mt-4 flex items-center gap-2 text-gray-400">
           <Target className="w-4 h-4" />
           <span className="text-sm">
             {pomodorosInSession} / {settings.longBreakInterval} until long break
@@ -85,7 +98,7 @@ export function TimerPage() {
         </div>
 
         {/* Current Task Card */}
-        <div className="mt-6 w-full">
+        <div className="mt-4 w-full">
           <CurrentTaskCard
             task={currentTask}
             onSelectTask={() => setShowTaskSelector(true)}
@@ -96,7 +109,7 @@ export function TimerPage() {
       </div>
 
       {/* Bottom Section - Controls */}
-      <div className="w-full pb-4 md:pb-8">
+      <div className="w-full pb-2 md:pb-8">
         <TimerControls />
       </div>
 
