@@ -441,10 +441,12 @@ export const useStore = create<AppStore>()(
     })),
     {
       name: 'brain-wrangler-storage',
+      version: 1, // Increment this to force clear old incompatible storage
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         settings: state.settings,
         tasks: state.tasks,
+        sessions: state.sessions,
       }),
     }
   )
