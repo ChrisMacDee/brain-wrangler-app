@@ -1,18 +1,10 @@
-import { useStore } from '../../store';
-import { TimerMode } from '../../types';
-
-const modeLabels: Record<TimerMode, string> = {
-  [TimerMode.WORK]: 'Focus Time',
-  [TimerMode.SHORT_BREAK]: 'Short Break',
-  [TimerMode.LONG_BREAK]: 'Long Break',
-};
+import { Brain } from 'lucide-react';
 
 export function Header() {
-  const mode = useStore((state) => state.mode);
-
   return (
-    <header className="bg-gray-800 text-white px-4 py-3 flex items-center justify-center">
-      <h1 className="text-lg font-semibold">{modeLabels[mode]}</h1>
+    <header className="bg-gray-800 text-white px-4 py-2.5 flex items-center justify-center gap-2">
+      <Brain className="w-6 h-6 text-red-500" />
+      <h1 className="text-lg font-semibold">Brain Wrangler</h1>
     </header>
   );
 }

@@ -4,9 +4,9 @@ import { BottomNav } from './BottomNav';
 
 export function Layout() {
   return (
-    <div className="flex flex-col min-h-screen bg-gray-900">
+    <div className="flex flex-col h-screen bg-gray-900">
       <Header />
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 overflow-y-auto overflow-x-hidden">
         <Outlet />
       </main>
       <BottomNav />

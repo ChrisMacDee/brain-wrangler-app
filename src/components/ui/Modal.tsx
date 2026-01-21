@@ -62,7 +62,7 @@ export function Modal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
       onClick={handleBackdropClick}
       role="dialog"
       aria-modal="true"
@@ -78,7 +78,7 @@ export function Modal({
       <div
         ref={modalRef}
         tabIndex={-1}
-        className="relative w-full sm:max-w-lg bg-gray-900 border border-gray-700 rounded-t-2xl sm:rounded-2xl shadow-2xl shadow-black/50 animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-200 max-h-[90vh] overflow-hidden flex flex-col"
+        className="relative w-full sm:max-w-lg bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl shadow-black/50 animate-in zoom-in-95 duration-200 max-h-[85vh] overflow-hidden flex flex-col"
       >
         {/* Header */}
         {(title || showCloseButton) && (
