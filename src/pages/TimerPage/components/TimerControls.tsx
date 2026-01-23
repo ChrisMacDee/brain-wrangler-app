@@ -15,7 +15,7 @@ export function TimerControls() {
 
   // Mode-based accent colors for the primary button
   const getPrimaryButtonStyles = () => {
-    const baseStyles = 'min-w-[140px] min-h-[56px] px-8 py-4 rounded-2xl font-semibold text-lg transition-all duration-200 flex items-center justify-center gap-3 shadow-lg active:scale-95';
+    const baseStyles = 'min-w-[140px] min-h-[56px] px-8 py-4 rounded-2xl font-semibold text-lg transition-all duration-200 flex items-center justify-center gap-3 shadow-lg active:scale-95 hover:shadow-xl transform hover:-translate-y-0.5';
 
     if (isRunning) {
       // Pause button - amber/yellow
@@ -34,11 +34,24 @@ export function TimerControls() {
   };
 
   const handlePrimaryClick = () => {
+    // Haptic feedback on mobile
+    if ('vibrate' in navigator) {
+      navigator.vibrate(10);
+    }
+
     if (isRunning) {
       pauseTimer();
     } else {
       startTimer();
     }
+  };
+
+  const handleReset = () => {
+    // Haptic feedback on mobile
+    if ('vibrate' in navigator) {
+      navigator.vibrate([10, 5, 10]);
+    }
+    resetTimer();
   };
 
   const getPrimaryLabel = () => {
@@ -68,11 +81,11 @@ export function TimerControls() {
 
       {/* Reset Button */}
       <button
-        onClick={resetTimer}
-        className="min-w-[56px] min-h-[56px] p-4 rounded-2xl font-medium text-gray-400 bg-gray-800/50 hover:bg-gray-700/50 hover:text-gray-200 transition-all duration-200 flex items-center justify-center active:scale-95 border border-gray-700/50"
+        onClick={handleReset}
+        className="min-w-[56px] min-h-[56px] p-4 rounded-2xl font-medium text-gray-400 bg-gray-800/50 hover:bg-gray-700/50 hover:text-gray-200 transition-all duration-200 flex items-center justify-center active:scale-95 active:rotate-180 border border-gray-700/50 hover:shadow-lg transform hover:-translate-y-0.5"
         aria-label="Reset timer"
       >
-        <RotateCcw className="w-6 h-6" strokeWidth={2} />
+        <RotateCcw className="w-6 h-6 transition-transform duration-200" strokeWidth={2} />
       </button>
     </div>
   );

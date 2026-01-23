@@ -53,11 +53,24 @@ export function TaskItem({
 
   const handleTouchEnd = () => {
     if (isSwipingDelete) {
+      // Haptic feedback for delete
+      if ('vibrate' in navigator) {
+        navigator.vibrate([10, 5, 10]);
+      }
       onDelete(task.id);
     }
     setSwipeOffset(0);
     setIsSwipingDelete(false);
     touchStartX.current = null;
+  };
+
+  const handleStatusToggle = (e: React.MouseEvent, newStatus: TaskStatus) => {
+    e.stopPropagation();
+    // Haptic feedback
+    if ('vibrate' in navigator) {
+      navigator.vibrate(5);
+    }
+    onStatusChange?.(task.id, newStatus);
   };
 
   // Pomodoro progress visualization
@@ -107,14 +120,11 @@ export function TaskItem({
     if (isCompleted) {
       return (
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onStatusChange?.(task.id, TaskStatus.PENDING);
-          }}
-          className="p-1 -ml-1"
+          onClick={(e) => handleStatusToggle(e, TaskStatus.PENDING)}
+          className="p-1 -ml-1 transition-transform active:scale-90"
           aria-label="Mark as incomplete"
         >
-          <CheckCircle2 className="w-6 h-6 text-emerald-500" />
+          <CheckCircle2 className="w-6 h-6 text-emerald-500 animate-[celebration-shake_0.5s_ease-in-out]" />
         </button>
       );
     }
@@ -122,25 +132,19 @@ export function TaskItem({
     if (isInProgress) {
       return (
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onStatusChange?.(task.id, TaskStatus.COMPLETED);
-          }}
-          className="p-1 -ml-1"
+          onClick={(e) => handleStatusToggle(e, TaskStatus.COMPLETED)}
+          className="p-1 -ml-1 transition-transform active:scale-90"
           aria-label="Mark as complete"
         >
-          <Play className="w-6 h-6 text-amber-500 fill-amber-500" />
+          <Play className="w-6 h-6 text-amber-500 fill-amber-500 animate-pulse" />
         </button>
       );
     }
 
     return (
       <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onStatusChange?.(task.id, TaskStatus.COMPLETED);
-        }}
-        className="p-1 -ml-1"
+        onClick={(e) => handleStatusToggle(e, TaskStatus.COMPLETED)}
+        className="p-1 -ml-1 transition-all hover:scale-110 active:scale-90"
         aria-label="Mark as complete"
       >
         <Circle className="w-6 h-6 text-gray-500 hover:text-gray-400 transition-colors" />
@@ -168,7 +172,7 @@ export function TaskItem({
   };
 
   return (
-    <div className="relative overflow-hidden rounded-xl">
+    <div className="relative overflow-hidden rounded-xl animate-[slide-up_0.3s_ease-out]">
       {/* Delete background */}
       <div
         className={`
