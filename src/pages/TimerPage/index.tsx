@@ -25,6 +25,7 @@ export function TimerPage() {
 
   const [showTaskSelector, setShowTaskSelector] = useState(false);
   const [showCompletion, setShowCompletion] = useState(false);
+  const [completedMode, setCompletedMode] = useState<TimerMode | null>(null);
   const previousRemainingRef = useRef(remainingSeconds);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -78,13 +79,28 @@ export function TimerPage() {
     audioRef.current.volume = 0.5;
   }, []);
 
+  // Update timer duration when settings change (only if timer is idle)
+  useEffect(() => {
+    if (status === TimerStatus.IDLE) {
+      const resetTimer = useStore.getState().resetTimer;
+      resetTimer();
+    }
+  }, [settings.workDuration, settings.shortBreakDuration, settings.longBreakDuration, status]);
+
   const handleTimerComplete = () => {
+    // Capture the mode BEFORE calling completePomodoro (which changes the mode)
+    const justCompletedMode = mode;
+    setCompletedMode(justCompletedMode);
+
     // Call the store's completion handler
     completePomodoro();
 
     // Visual feedback
     setShowCompletion(true);
-    setTimeout(() => setShowCompletion(false), 3000);
+    setTimeout(() => {
+      setShowCompletion(false);
+      setCompletedMode(null);
+    }, 3000);
 
     // Haptic feedback
     if ('vibrate' in navigator && notificationSettings.vibration) {
@@ -100,7 +116,7 @@ export function TimerPage() {
 
     // Browser notification
     if (notificationSettings.enabled && 'Notification' in window && Notification.permission === 'granted') {
-      const modeLabel = mode === TimerMode.WORK ? 'Focus session' : 'Break';
+      const modeLabel = justCompletedMode === TimerMode.WORK ? 'Focus session' : 'Break';
       new Notification('Brain Wrangler', {
         body: `${modeLabel} complete! Great work!`,
         icon: '/icons/icon-192.png',
@@ -138,14 +154,14 @@ export function TimerPage() {
   return (
     <div className="flex flex-col items-center justify-between h-full px-3 py-3 md:px-4 md:py-8">
       {/* Completion Notification */}
-      {showCompletion && (
+      {showCompletion && completedMode && (
         <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 animate-[slide-up_0.3s_ease-out]">
           <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 border border-emerald-400/20">
             <CheckCircle className="w-6 h-6 animate-[celebration-shake_0.5s_ease-in-out]" />
             <div>
               <p className="font-semibold text-lg">Complete!</p>
               <p className="text-sm text-emerald-100">
-                {mode === TimerMode.WORK ? 'Focus session done!' : 'Break finished!'}
+                {completedMode === TimerMode.WORK ? 'Focus session done!' : 'Break finished!'}
               </p>
             </div>
           </div>
@@ -158,7 +174,7 @@ export function TimerPage() {
       </div>
 
       {/* Center Section - Timer Display (Hero) */}
-      <div className="flex-1 flex flex-col items-center justify-center -mt-2 md:-mt-8">
+      <div className="flex-1 flex flex-col items-center justify-center -mt-2 md:-mt-8 overflow-visible">
         <TimerDisplay size={260} />
 
         {/* Session Progress Indicator */}

@@ -164,8 +164,11 @@ export function InsightsPage() {
                     border: '1px solid #374151',
                     borderRadius: '8px',
                     fontSize: '12px',
+                    color: '#f3f4f6',
                   }}
-                  labelStyle={{ color: '#9ca3af' }}
+                  labelStyle={{ color: '#d1d5db' }}
+                  itemStyle={{ color: '#f3f4f6' }}
+                  cursor={{ fill: 'rgba(244, 63, 94, 0.1)' }}
                   formatter={(value) => [`${value} pomodoros`, 'Completed']}
                 />
                 <Bar dataKey="pomodoros" radius={[4, 4, 0, 0]}>
